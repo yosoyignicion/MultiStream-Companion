@@ -1,8 +1,8 @@
 [package]
 name = "multistream-companion"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "MultiStream Companion — multichat, OBS remote, cross-platform title sync"
+authors = ["IgnicionDev"]
 edition = "2021"
 
 [build-dependencies]

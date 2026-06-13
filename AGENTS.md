@@ -8,32 +8,44 @@ Tauri v2 + Svelte 5 + TypeScript + Rust (plain Svelte, no SvelteKit)
 |---|---|---|
 | Full Tauri dev | `pnpm tauri dev` | Starts Vite + Rust together |
 | Frontend dev only | `pnpm dev` | Vite on `:1420`, HMR `:1421` via `TAURI_DEV_HOST` |
-| Build frontend | `pnpm build` | Outputs to `build/` |
+| Build frontend | `pnpm build` | Outputs to `build/` (not default `dist/`) |
 | Tauri CLI | `pnpm tauri <cmd>` | e.g. `pnpm tauri build` |
 | System icons | `pnpm tauri icon ./app-icon.png` | Regenerates all OS icon formats in `src-tauri/icons/` |
 | Regenerate logo | `python3 generate_logo.py` | Creates `app-icon.png` (512x512 RGBA) via Pillow |
 
-No lint, format, typecheck, or test scripts exist. ESLint + Prettier are configured but unwired. Run manually: `pnpm eslint src/`, `pnpm prettier --check src/`. Rust formatting: `cargo fmt -p multistream-companion` (4-space indent, 100-width).
+No lint, format, typecheck, or test scripts exist. ESLint + Prettier configured but unwired. Run manually: `pnpm eslint src/`, `pnpm prettier --check src/`. Rust formatting: `cargo fmt -p multistream-companion` (4-space indent, 100-width).
 
 ## Architecture
 
-- **Frontend:** `src/main.ts` → `src/App.svelte` (Svelte 5 mount API). Path alias `$lib/*` → `src/lib/*`.
-- **Backend:** Rust binary at `src-tauri/src/main.rs`. Modules: `config/` (JSON config + keyring secrets), `obs/` (OBS WebSocket via obws crate), `chat/` (kick.rs, twitch.rs), `services/` (stream_info.rs — Twitch Helix API).
-- **IPC:** Commands registered via `#[tauri::command]` + `generate_handler![]` in `main.rs`. Types shared bidirectionally — `AppConfig`/`SceneInfo`/`UnifiedChatMessage` defined in both Rust (`config/mod.rs`, `chat/kick.rs`) and `src/lib/types.ts`.
-- **Events:** Rust emits `"chat-message"` events via `app_handle.emit()`; frontend listens with `listen('chat-message', ...)` from `@tauri-apps/api/event`.
-- **State globals:** `ObsState` and `ChatState` registered via `.manage()` in `main.rs`, accessed from commands as `State<'_, ObsState>`.
+- **Frontend:** `src/main.ts` → `src/App.svelte` (Svelte 5 `mount()` API). Path alias `$lib/*` → `src/lib/*`.
+- **Backend:** Rust binary at `src-tauri/src/main.rs`. Modules: `config/` (JSON config + keyring secrets), `obs/` (OBS WebSocket via `obws`), `chat/` (kick.rs, twitch.rs), `services/` (stream_info.rs — Twitch Helix API).
+- **IPC:** 15 commands via `#[tauri::command]` + `generate_handler![]`. Types shared bidirectionally — `AppConfig`/`SceneInfo`/`UnifiedChatMessage` defined in both Rust and `src/lib/types.ts`.
+- **Events:** Rust emits `"chat-message"` via `app_handle.emit()`; frontend listens with `listen('chat-message', ...)` from `@tauri-apps/api/event`.
+- **State globals:** `ObsState` and `ChatState` via `.manage()` in `main.rs`, accessed as `State<'_, ObsState>`.
 - **Secrets:** `keyring` crate (service name `com.msc.app`). Keys: `twitch_oauth_token`, `obs_password`. Requires `libsecret-1-dev` on Linux.
-- **Config JSON:** `~/.config/com.msc.app/config.json` (non-sensitive data: OBS host/port, usernames, client IDs, chatroom IDs).
+- **Config JSON:** `~/.config/com.msc.app/config.json` (non-sensitive: OBS host/port, usernames, client IDs, chatroom IDs).
+
+## IPC commands reference
+
+- `start_chat_ingestion(platform: "twitch"|"kick", username: string)` — spawns a chat listener
+- `send_unified_chat_message(message: string)` — broadcasts to all connected platforms (Twitch real, Kick mock)
+- `update_global_title(new_title: string)` — pushes title to Twitch Helix (real) and Kick (mock)
+- `moderate_user_command(platform: string, targetUsername: string, action: "timeout"|"ban")` — **both platforms are mock-only**
+- `simulate_spam_messages()` — debug: emits 50 fake messages at 150ms intervals
+- `load_config()` / `save_config(config)` / `get_secure_credential` / `save_secure_credential` / `delete_secure_credential`
+- `obs_connect` / `obs_disconnect` / `obs_get_scenes` / `obs_set_scene` / `obs_toggle_streaming`
 
 ## Chat specifics
 
-- **Twitch:** IRC via `tokio-tungstenite` WebSocket (`irc-ws.chat.twitch.tv:443`). Write uses Helix API `POST /helix/chat/messages` (requires `twitch_oauth_token` + `twitch_client_id`). Auth token goes in OS keyring under `twitch_oauth_token`.
-- **Kick:** Pusher protocol (WebSocket) on `chatrooms.{id}.v2` channel. Kick write is **mock-only** (`"Kick: Sincronizado (Mock)"`) — no public API exists. Debug prefix: `[KICK DEBUG]`.
+- **Twitch:** IRC via `tokio-tungstenite` WebSocket (`irc-ws.chat.twitch.tv:443`). Write uses Helix API `POST /helix/chat/messages` (requires `twitch_oauth_token` + `twitch_client_id`). Auth token in OS keyring under `twitch_oauth_token`.
+- **Kick:** Pusher protocol (WebSocket) on `chatrooms.{id}.v2` channel. **All Kick writes are mock-only** — returns `"Kick: Sincronizado (Mock)"`. Debug prefix: `[KICK DEBUG]`.
+- **Moderation:** Not connected to real APIs on either platform — `execute_twitch_moderation` logs only.
+- **Real external writes:** Only Twitch Helix title PATCH and Helix chat POST actually fire API calls.
 
 ## Tauri v2 specifics
 
 - `security.csp` is `null` (disabled) in `tauri.conf.json` — permits inline styles and external connections.
-- Capabilities in `src-tauri/capabilities/default.json` — add new permissions there. Currently has `core:default` + `opener:default`.
+- Capabilities in `src-tauri/capabilities/default.json` — add new permissions there. Currently `core:default` + `opener:default`.
 - Vite watch ignores `src-tauri/**` (Tauri handles Rust rebuilds itself).
 - `beforeDevCommand: "pnpm dev"` and `beforeBuildCommand: "pnpm build"` — Tauri invokes these automatically.
 - Icon paths in `tauri.conf.json` point to `src-tauri/icons/` — regenerate via `pnpm tauri icon ./app-icon.png`.
@@ -46,10 +58,17 @@ No lint, format, typecheck, or test scripts exist. ESLint + Prettier are configu
 - **Branding palette:** Deep Black `#050505`, Crimson Red `#ff003c`, Pure White `#ffffff`.
 - **.engram/** is auto-generated by OpenCode — do not edit manually.
 
+## CI/CD
+
+- Workflow en `.github/workflows/publish.yml`: push a `release` empaqueta para Windows, macOS (x86_64+ARM), Ubuntu 24.04.
+- También `workflow_dispatch` manual con selector de SO individual — útil para testear un solo target sin esperar los 4.
+- La action `tauri-apps/tauri-action@v2` usa Tauri v2 (no confundir con @v1 que es para Tauri v1).
+- Ubuntu necesita `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libssl-dev` y `build-essential`.
+
 ## Known gotchas
 
 - `pnpm tauri build` on Linux fails if `libsecret-1-dev` is missing.
-- README.md is stale (references SvelteKit — the app uses plain Svelte 5).
+- README.md references SvelteKit — the app uses plain Svelte 5.
 - `src/lib/components/` exists but is empty.
 - Kick chatroom ID can be provided manually (bypass) or resolved automatically via Kick API.
-- `generate_logo.py` at project root auto-installs Pillow if missing. Run before `pnpm tauri icon` if you change the logo.
+- `generate_logo.py` auto-installs Pillow if missing. Run before `pnpm tauri icon` if you change the logo.

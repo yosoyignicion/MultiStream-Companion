@@ -3,6 +3,18 @@ on:
   push:
     branches:
       - release
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Sistema a empaquetar'
+        type: choice
+        options:
+          - 'all (Windows + macOS + Linux)'
+          - 'ubuntu-24.04'
+          - 'windows-latest'
+          - 'macos-latest (ARM)'
+          - 'macos-latest (x86_64)'
+        default: 'all (Windows + macOS + Linux)'
 
 jobs:
   publish-tauri:
@@ -14,38 +26,61 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
+            display: 'macos-latest (ARM)'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
+            display: 'macos-latest (x86_64)'
           - platform: 'windows-latest'
             args: ''
-          - platform: 'ubuntu-22.04'
+            display: 'windows-latest'
+          - platform: 'ubuntu-24.04'
             args: ''
+            display: 'ubuntu-24.04'
 
     runs-on: ${{ matrix.platform }}
+    if: |
+      github.event_name != 'workflow_dispatch' ||
+      inputs.platform == 'all (Windows + macOS + Linux)' ||
+      inputs.platform == matrix.display
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: 'pnpm'
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: |
+            ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+        if: matrix.platform == 'ubuntu-24.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libgtk-3-dev \
+            libssl-dev \
+            build-essential
 
       - name: install frontend dependencies
         run: pnpm install
 
       - name: Build and Publish
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
