@@ -38,10 +38,11 @@ jobs:
             display: 'ubuntu-24.04'
 
     runs-on: ${{ matrix.platform }}
-    if: |
+    if: >
       github.event_name != 'workflow_dispatch' ||
-      inputs.platform == 'all (Windows + macOS + Linux)' ||
-      inputs.platform == matrix.display
+      (github.event_name == 'workflow_dispatch' &&
+        (github.event.inputs.platform == 'all (Windows + macOS + Linux)' ||
+         github.event.inputs.platform == matrix.display))
 
     steps:
       - uses: actions/checkout@v4
@@ -60,8 +61,7 @@ jobs:
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: |
-            ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-24.04'
