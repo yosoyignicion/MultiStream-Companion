@@ -4,17 +4,6 @@ on:
     branches:
       - release
   workflow_dispatch:
-    inputs:
-      platform:
-        description: 'Sistema a empaquetar'
-        type: choice
-        options:
-          - 'all (Windows + macOS + Linux)'
-          - 'ubuntu-24.04'
-          - 'windows-latest'
-          - 'macos-latest (ARM)'
-          - 'macos-latest (x86_64)'
-        default: 'all (Windows + macOS + Linux)'
 
 jobs:
   publish-tauri:
@@ -26,23 +15,14 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target aarch64-apple-darwin'
-            display: 'macos-latest (ARM)'
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
-            display: 'macos-latest (x86_64)'
           - platform: 'windows-latest'
             args: ''
-            display: 'windows-latest'
           - platform: 'ubuntu-24.04'
             args: ''
-            display: 'ubuntu-24.04'
 
     runs-on: ${{ matrix.platform }}
-    if: >
-      github.event_name != 'workflow_dispatch' ||
-      (github.event_name == 'workflow_dispatch' &&
-        (github.event.inputs.platform == 'all (Windows + macOS + Linux)' ||
-         github.event.inputs.platform == matrix.display))
 
     steps:
       - uses: actions/checkout@v4
