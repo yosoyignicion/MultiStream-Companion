@@ -13,7 +13,20 @@
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.6-FF003C?logo=typescript&logoColor=white&style=flat-square">
   <img alt="Rust" src="https://img.shields.io/badge/Rust-edition_2021-FF003C?logo=rust&logoColor=white&style=flat-square">
   <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/badge/license-MIT-050505?style=flat-square"></a>
+  <a href="https://github.com/yosoyignicion/MultiStream-Companion/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/yosoyignicion/MultiStream-Companion?color=FF003C&style=flat-square"></a>
 </p>
+
+---
+
+## ✦ Descarga rapida
+
+Descarga el instalador para tu sistema desde la [ultima release](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest):
+
+| Windows | macOS (Intel) | macOS (ARM) | Linux (.deb) |
+|---------|--------------|-------------|-------------|
+| [`.msi`](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest) | [`.dmg`](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest) | [`.dmg`](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest) | [`.deb`](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest) |
+
+No requiere Node.js, pnpm ni Rust. Descarga, instala y ejecuta.
 
 ---
 
@@ -53,11 +66,13 @@ Esta construida con **Tauri v2** (Rust) y **Svelte 5** (TypeScript), lo que la h
 
 ---
 
-## ✦ Requisitos para usar la app
+## ✦ Requisitos del sistema
 
-### Para ejecutar el binario compilado
+### Para el instalador (recomendado)
 
-Solo necesitas descargar el archivo correspondiente a tu sistema desde [Releases](https://github.com/tuusuario/multistream-companion/releases). No requiere instalar Node.js, Rust ni nada adicional.
+- **Windows:** Windows 10+
+- **macOS:** 10.15+
+- **Linux:** Ubuntu 22.04+ o Debian 12+ (requiere `sudo apt install libwebkit2gtk-4.1-dev libsecret-1-dev`)
 
 ### Para compilar desde el codigo fuente
 
@@ -71,8 +86,11 @@ Solo necesitas descargar el archivo correspondiente a tu sistema desde [Releases
 
 ### 1. Descarga o compila
 
+Si solo quieres usar la app, descarga el instalador desde [Releases](https://github.com/yosoyignicion/MultiStream-Companion/releases/latest). Si prefieres compilar desde el codigo:
+
 ```bash
-# Si quieres compilar desde el codigo:
+git clone https://github.com/yosoyignicion/MultiStream-Companion.git
+cd MultiStream-Companion
 pnpm install
 python3 generate_logo.py    # genera el icono 512×512
 pnpm tauri icon ./app-icon.png
