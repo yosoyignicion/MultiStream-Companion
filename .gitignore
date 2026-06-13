@@ -13,7 +13,6 @@ src-tauri/gen/
 
 # Generated icon artifacts
 app-icon.png
-src/assets/logo.png
 
 # OpenCode auto-generated memory
 .engram/
