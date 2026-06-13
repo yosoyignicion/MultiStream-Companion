@@ -176,6 +176,7 @@
           <div class="form-group">
             <label>Twitch OAuth Token</label>
             <input type="password" bind:value={twitchToken} placeholder="oauth:********" />
+            <span class="field-hint">Generalo en <a href="https://twitchtokengenerator.com" target="_blank" rel="noopener">twitchtokengenerator.com</a> con los scopes: <code>chat:read</code>, <code>user:write:chat</code>, <code>channel:manage:broadcast</code>, <code>moderator:manage:banned_users</code></span>
           </div>
           <hr />
           <div class="form-group">
@@ -185,6 +186,7 @@
           <div class="form-group">
             <label>Kick Chatroom ID (Bypass)</label>
             <input type="text" bind:value={config.kick_chatroom_id} placeholder="ID numerico" />
+            <span class="field-hint">Deja vacio para deteccion automatica. Si falla: abre tu canal en Kick, F12 > Network, busca <code>chatroom.id</code> en la respuesta de <code>/api/v1/channels/tu_usuario</code></span>
           </div>
           <button onclick={saveSettings} class="btn-primary" style="width: 100%; margin-top: 15px;">Guardar y Aplicar</button>
         </div>
@@ -544,6 +546,20 @@
     font-size: 0.85rem;
   }
   .form-group input:focus { border-color: #ff003c; outline: none; }
+  .field-hint {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: 2px;
+    display: block;
+    line-height: 1.4;
+  }
+  .field-hint a { color: #ff003c; }
+  .field-hint code {
+    background: #1e1e1e;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+  }
   .row { display: flex; gap: 5px; }
 
   .btn-obs-large {

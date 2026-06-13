@@ -112,16 +112,16 @@ https://twitchtokengenerator.com/
 1. Abre el enlace de arriba
 2. Haz clic en **"Generate Token"**
 3. Asegurate de que incluya estos permisos (scopes):
-   - `chat:read` — para leer el chat
-   - `chat:edit` — para enviar mensajes
-   - `channel:manage:broadcast` — para cambiar el titulo
-   - `moderator:manage:banned_users` — para moderacion
+   - `chat:read` — para leer el chat via IRC
+   - `user:write:chat` — para enviar mensajes al chat via Helix API
+   - `channel:manage:broadcast` — para cambiar el titulo del directo
+   - `moderator:manage:banned_users` — para moderacion (timeout/ban)
 4. Copia el token que empieza con `oauth:` (ej: `oauth:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
 5. Pegalo en Ajustes > **Twitch OAuth Token**
 
 > Alternativa oficial: puedes generar tu token desde la consola de desarrollador de Twitch usando el **Implicit Code Flow**:
 > ```
-> https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=TU_CLIENT_ID&redirect_uri=http://localhost&scope=chat:read+chat:edit+channel:manage:broadcast+moderator:manage:banned_users
+> https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=TU_CLIENT_ID&redirect_uri=http://localhost&scope=chat:read+user:write:chat+channel:manage:broadcast+moderator:manage:banned_users
 > ```
 
 ### Kick Chatroom ID
@@ -145,6 +145,20 @@ Normalmente la app **detecta automaticamente** tu chatroom ID solo con introduci
    - **OBS Host:** `127.0.0.1` (mismo PC) o la IP local (ej: `192.168.1.100`)
    - **OBS Port:** `4455`
    - **OBS Password:** la contrasena que pusiste (o vacio si no usas autenticacion)
+
+### Transmision multi‑plataforma con Restream.io
+
+OBS Studio solo puede transmitir a **un destino RTMP** a la vez. Para emitir en Twitch y Kick simultaneamente sin duplicar carga en tu PC:
+
+1. Crea una cuenta gratuita en **[Restream.io](https://restream.io)** o **StreamElements**
+2. En la plataforma, vincula tus canales de Twitch y Kick
+3. Copia la **URL RTMP unica** y la **Clave de transmision** que te dan
+4. En OBS Studio > Ajustes > Transmision, selecciona "Servicio Personalizado" y pega esos valores
+5. La app funciona igual: al pulsar **INICIAR DIRECTO**, OBS envia una sola senal a Restream y ellos la replican a Twitch + Kick
+
+>**Ventaja:** tu PC solo codifica y sube **un** stream, no dos. Consumo de CPU y ancho de banda minimo.
+
+---
 
 ### Donde se guarda cada cosa
 
