@@ -1,0 +1,25 @@
+.DS_Store
+node_modules/
+/build
+/dist
+.env
+.env.*
+!.env.example
+vite.config.*.timestamp-*
+
+# Rust build artifacts (GBs)
+src-tauri/target/
+src-tauri/gen/
+
+# Generated icon artifacts
+app-icon.png
+src/assets/logo.png
+
+# OpenCode auto-generated memory
+.engram/
+
+# IDE configs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
