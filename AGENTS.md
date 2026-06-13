@@ -62,7 +62,7 @@ No lint, format, typecheck, or test scripts exist. ESLint + Prettier configured 
 
 - Workflow en `.github/workflows/publish.yml`: push a `release` empaqueta para Windows, macOS (x86_64+ARM), Ubuntu 24.04.
 - También `workflow_dispatch` manual con selector de SO individual — útil para testear un solo target sin esperar los 4.
-- La action `tauri-apps/tauri-action@v2` usa Tauri v2 (no confundir con @v1 que es para Tauri v1).
+- La action `tauri-apps/tauri-action@v0` usa la v0.6.x (compatible Tauri v2; no confundir con `@v1` que es para Tauri v1).
 - Ubuntu necesita `libwebkit2gtk-4.1-dev`, `libgtk-3-dev`, `libssl-dev` y `build-essential`.
 
 ## Known gotchas
